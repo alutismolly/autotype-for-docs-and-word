@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "AutoType for Word",
+  "version": "1.0.0",
+  "description": "Последовательный перенос подготовленного текста в Word Online с безопасным резервным копированием.",
+  "permissions": ["storage", "unlimitedStorage", "activeTab", "tabs", "webNavigation", "clipboardWrite"],
+  "host_permissions": [
+    "https://word.cloud.microsoft/*",
+    "https://*.office.com/*",
+    "https://*.microsoft365.com/*",
+    "https://*.officeapps.live.com/*"
+  ],
+  "action": {
+    "default_title": "AutoType for Word",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://word.cloud.microsoft/*",
+        "https://*.office.com/*",
+        "https://*.microsoft365.com/*",
+        "https://*.officeapps.live.com/*"
+      ],
+      "js": ["content.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}

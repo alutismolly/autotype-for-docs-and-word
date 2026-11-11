@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AutoType for Word</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="logo">A</div>
+      <div><h1>AutoType for Word</h1><p>Локальный перенос текста</p></div>
+    </header>
+
+    <label for="sourceText">Исходный текст</label>
+    <textarea id="sourceText" spellcheck="false" placeholder="Вставьте подготовленный текст…"></textarea>
+
+    <section class="speed-row">
+      <label for="speed">Скорость</label>
+      <output id="speedValue">120 симв/мин</output>
+    </section>
+    <input id="speed" type="range" min="20" max="300" step="5" value="120">
+
+    <div class="progress-info">
+      <span id="status">Готово</span>
+      <span id="counter">0 / 0</span>
+    </div>
+    <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="progressBar"></div>
+    </div>
+    <div id="percent">0%</div>
+
+    <div class="buttons">
+      <button id="start" class="primary">Старт</button>
+      <button id="pause">Пауза</button>
+      <button id="resume">Продолжить</button>
+      <button id="stop" class="danger">Стоп</button>
+    </div>
+    <button id="copyRemainder" class="fallback" hidden>Скопировать оставшийся текст</button>
+    <p id="message" aria-live="polite">Откройте документ Word Online и поставьте курсор в документ.</p>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

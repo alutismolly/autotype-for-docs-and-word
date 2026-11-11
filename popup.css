@@ -1,0 +1,30 @@
+:root { color-scheme: dark; --bg:#121018; --panel:#1b1724; --text:#f4f0ff; --muted:#aaa1b8; --purple:#8b5cf6; --purple2:#a78bfa; --red:#ef5a72; }
+* { box-sizing: border-box; }
+body { margin:0; width:410px; min-height:600px; background:linear-gradient(145deg,#17121f,var(--bg)); color:var(--text); font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { padding:20px; }
+header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.logo { display:grid; place-items:center; width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,var(--purple),#5b21b6); font-size:21px; font-weight:800; box-shadow:0 8px 24px #7c3aed55; }
+h1 { margin:0; font-size:18px; letter-spacing:.1px; }
+header p { margin:2px 0 0; color:var(--muted); font-size:12px; }
+label { display:block; margin-bottom:7px; font-weight:650; }
+textarea { width:100%; height:235px; resize:vertical; padding:13px; border:1px solid #40364e; border-radius:12px; outline:none; background:var(--panel); color:var(--text); font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace; }
+textarea:focus { border-color:var(--purple); box-shadow:0 0 0 3px #8b5cf622; }
+.speed-row,.progress-info { display:flex; justify-content:space-between; align-items:center; }
+.speed-row { margin-top:15px; }
+.speed-row label { margin:0; }
+output,#counter,#percent { color:var(--purple2); font-variant-numeric:tabular-nums; }
+input[type=range] { width:100%; accent-color:var(--purple); margin:9px 0 15px; }
+.progress-info { color:var(--muted); font-size:12px; margin-bottom:7px; }
+.progress-track { height:8px; overflow:hidden; border-radius:99px; background:#30293a; }
+#progressBar { width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--purple),#c084fc); transition:width .2s; }
+#percent { margin:5px 0 14px; text-align:right; font-size:12px; }
+.buttons { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+button { min-height:40px; padding:8px 11px; border:1px solid #473c55; border-radius:10px; background:#272130; color:var(--text); cursor:pointer; font-weight:700; }
+button:hover:not(:disabled) { border-color:var(--purple2); background:#332943; }
+button:disabled { opacity:.42; cursor:not-allowed; }
+button.primary { border-color:transparent; background:var(--purple); }
+button.primary:hover:not(:disabled) { background:#7c3aed; }
+button.danger { color:#ff9bac; }
+.fallback { width:100%; margin-top:8px; border-color:#7658ac; }
+#message { min-height:36px; margin:12px 1px 0; color:var(--muted); font-size:12px; }
+#message.error { color:#ff91a4; }
