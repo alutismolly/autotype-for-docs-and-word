@@ -1,26 +1,65 @@
 (() => {
-  if (window.__autoTypeForWordLoaded) return;
-  window.__autoTypeForWordLoaded = true;
+  if (window.__autoTypeForGoogleDocsLoaded) return;
+  window.__autoTypeForGoogleDocsLoaded = true;
 
   let job = { text: "", speed: 120, index: 0, status: "idle", error: "" };
   let timer = null;
   let target = null;
 
-  const isEditable = (el) => !!el && (
-    el instanceof HTMLTextAreaElement ||
-    (el instanceof HTMLInputElement && /^(text|search|url|email|tel|password)$/i.test(el.type)) ||
-    el.isContentEditable ||
-    el.getAttribute?.("role") === "textbox"
+  const isGoogleDocsInputFrame = () => {
+    try {
+      return window.frameElement?.classList?.contains("docs-texteventtarget-iframe") ||
+        window.frameElement?.getAttribute?.("aria-label")?.toLowerCase().includes("editing");
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const isTextControl = (el) => !!el && (
+    el.tagName === "TEXTAREA" ||
+    (el.tagName === "INPUT" && /^(text|search|url|email|tel|password)$/i.test(el.type))
   );
 
+  const isEditable = (el) => !!el && (
+    isTextControl(el) ||
+    el.isContentEditable ||
+    el.getAttribute?.("role") === "textbox" ||
+    (el === el.ownerDocument?.body && (
+      el.ownerDocument.designMode === "on" ||
+      isGoogleDocsInputFrame() ||
+      el.ownerDocument !== document
+    ))
+  );
+
+  function findGoogleDocsEditor() {
+    const iframe = document.querySelector?.(".docs-texteventtarget-iframe");
+    try {
+      const editorDocument = iframe?.contentDocument;
+      return editorDocument?.querySelector?.('[contenteditable="true"], [role="textbox"], textarea') ||
+        editorDocument?.body || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   function findEditor() {
+    const googleDocsEditor = findGoogleDocsEditor();
+    if (googleDocsEditor) return googleDocsEditor;
+
     const active = document.activeElement;
     if (isEditable(active)) return active;
     const selection = document.getSelection();
     const anchor = selection?.anchorNode;
     const candidate = anchor && (anchor.nodeType === Node.ELEMENT_NODE ? anchor : anchor.parentElement);
     const editable = candidate?.closest?.('[contenteditable="true"], textarea, input, [role="textbox"]');
-    return isEditable(editable) ? editable : null;
+    if (isEditable(editable)) return editable;
+
+    const fallback = document.querySelector(
+      'textarea.docs-texteventtarget, textarea[aria-label*="document" i], [contenteditable="true"], [role="textbox"]'
+    );
+    if (isEditable(fallback)) return fallback;
+    if (isGoogleDocsInputFrame() && document.body) return document.body;
+    return null;
   }
 
   async function publish() {
@@ -35,18 +74,55 @@
     return el.value.slice(start, start + value.length) === value;
   }
 
+  function insertIntoGoogleDocs(el, value) {
+    const editorDocument = el.ownerDocument;
+    const editorWindow = editorDocument?.defaultView;
+    if (!editorDocument || !editorWindow) return false;
+
+    try {
+      editorWindow.focus();
+      el.focus();
+      let dataTransfer;
+      try {
+        dataTransfer = new editorWindow.DataTransfer();
+        dataTransfer.setData("text/plain", value);
+      } catch (_) {}
+      const event = new editorWindow.InputEvent("beforeinput", {
+        inputType: "insertReplacementText",
+        data: value,
+        dataTransfer,
+        bubbles: true,
+        cancelable: true,
+        composed: true
+      });
+      el.dispatchEvent(event);
+      return true;
+    } catch (_) {
+      try {
+        return editorDocument.execCommand("insertText", false, value);
+      } catch (_) {
+        return false;
+      }
+    }
+  }
+
   function insertCharacter(char) {
     target.focus({ preventScroll: true });
-    if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
+    if (isTextControl(target)) {
       return insertIntoTextControl(target, char);
     }
+    if (location.hostname === "docs.google.com" || target.ownerDocument !== document || isGoogleDocsInputFrame()) {
+      return insertIntoGoogleDocs(target, char);
+    }
+    const targetDocument = target.ownerDocument || document;
     const command = char === "\n" ? "insertParagraph" : "insertText";
     const data = char === "\n" ? null : char;
     try {
-      if (document.execCommand(command, false, data)) return true;
+      if (targetDocument.execCommand(command, false, data)) return true;
     } catch (_) {}
     try {
-      const before = new InputEvent("beforeinput", {
+      const TargetInputEvent = targetDocument.defaultView?.InputEvent || InputEvent;
+      const before = new TargetInputEvent("beforeinput", {
         bubbles: true, cancelable: true,
         inputType: char === "\n" ? "insertParagraph" : "insertText",
         data: char === "\n" ? null : char
@@ -81,7 +157,7 @@
       return;
     }
     if (!insertCharacter(job.text[job.index])) {
-      await fail("Word Online заблокировал программный ввод. Скопируйте оставшийся текст и вставьте его вручную через Ctrl+V.");
+      await fail("Google Docs заблокировал программный ввод. Скопируйте оставшийся текст и вставьте его вручную через Ctrl+V.");
       return;
     }
     job.index += 1;
@@ -96,14 +172,14 @@
       const command = message.command;
       if (command === "start") {
         target = findEditor();
-        if (!target) return sendResponse({ ok: false, error: "Сначала щёлкните в области документа Word Online, затем снова нажмите «Старт»." });
+        if (!target) return sendResponse({ ok: false, error: "Сначала щёлкните в области документа Google Docs, затем снова нажмите «Старт»." });
         job = { text: message.text, speed: message.speed, index: 0, status: "running", error: "" };
         await publish(); schedule();
       } else if (command === "pause") {
         clearTimeout(timer); job.status = "paused"; await publish();
       } else if (command === "resume") {
         target = findEditor() || target;
-        if (!target?.isConnected) return sendResponse({ ok: false, error: "Поставьте курсор в документ Word Online перед продолжением." });
+        if (!target?.isConnected) return sendResponse({ ok: false, error: "Поставьте курсор в документ Google Docs перед продолжением." });
         job.text = message.text; job.speed = message.speed; job.index = Math.min(message.index ?? job.index, job.text.length); job.status = "running"; job.error = "";
         await publish(); schedule();
       } else if (command === "stop") {

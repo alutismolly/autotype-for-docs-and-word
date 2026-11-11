@@ -1,17 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "AutoType for Word",
-  "version": "1.0.0",
-  "description": "Последовательный перенос подготовленного текста в Word Online с безопасным резервным копированием.",
+  "name": "AutoType for Google Docs",
+  "version": "1.1.0",
+  "description": "Последовательный перенос подготовленного текста в Google Docs с паузой и контролем скорости.",
   "permissions": ["storage", "unlimitedStorage", "activeTab", "tabs", "webNavigation", "clipboardWrite"],
   "host_permissions": [
-    "https://word.cloud.microsoft/*",
-    "https://*.office.com/*",
-    "https://*.microsoft365.com/*",
-    "https://*.officeapps.live.com/*"
+    "https://docs.google.com/*"
   ],
   "action": {
-    "default_title": "AutoType for Word",
+    "default_title": "AutoType for Google Docs",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
@@ -32,13 +29,12 @@
   "content_scripts": [
     {
       "matches": [
-        "https://word.cloud.microsoft/*",
-        "https://*.office.com/*",
-        "https://*.microsoft365.com/*",
-        "https://*.officeapps.live.com/*"
+        "https://docs.google.com/*"
       ],
       "js": ["content.js"],
       "all_frames": true,
+      "match_about_blank": true,
+      "match_origin_as_fallback": true,
       "run_at": "document_idle"
     }
   ]

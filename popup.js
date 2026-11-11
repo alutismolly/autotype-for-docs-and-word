@@ -30,7 +30,7 @@ function render(next = state) {
   ui.stop.disabled = !["running", "paused", "error"].includes(state.status);
   ui.text.disabled = running;
   ui.copy.hidden = state.status !== "error" || index >= total;
-  ui.message.textContent = state.error || (state.status === "completed" ? "Весь текст перенесён." : "Откройте документ и поставьте курсор в место вставки.");
+  ui.message.textContent = state.error || (state.status === "completed" ? "Весь текст перенесён." : "Откройте Google Docs и поставьте курсор в место вставки.");
   ui.message.classList.toggle("error", !!state.error);
 }
 
@@ -39,17 +39,17 @@ async function persistLocal(overrides = {}) {
   await chrome.storage.local.set({ job: state });
 }
 
-async function activeWordTab() {
+async function activeGoogleDocsTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id || !/^https:\/\/([^/]+\.)?(office\.com|microsoft365\.com|officeapps\.live\.com)\//i.test(tab.url || "") && !/^https:\/\/word\.cloud\.microsoft\//i.test(tab.url || "")) {
-    throw new Error("Активная вкладка не является страницей Word Online.");
+  if (!tab?.id || !/^https:\/\/docs\.google\.com\/document\//i.test(tab.url || "")) {
+    throw new Error("Откройте документ на docs.google.com и повторите попытку.");
   }
   return tab;
 }
 
 async function command(command) {
   try {
-    const tab = await activeWordTab();
+    const tab = await activeGoogleDocsTab();
     const frames = await chrome.webNavigation.getAllFrames({ tabId: tab.id });
     if (controlFrameId !== null) {
       const preferred = frames.find((frame) => frame.frameId === controlFrameId);
@@ -59,7 +59,7 @@ async function command(command) {
       }
     }
     let response = null;
-    let lastError = "Редактор Word не найден на странице.";
+    let lastError = "Редактор Google Docs не найден на странице.";
     for (const frame of frames) {
       try {
         const candidate = await chrome.tabs.sendMessage(tab.id, {
@@ -79,7 +79,7 @@ async function command(command) {
     if (response.state) render(response.state);
   } catch (error) {
     state.error = error.message.includes("Receiving end")
-      ? "Обновите вкладку Word Online после установки расширения и повторите попытку."
+      ? "Обновите вкладку Google Docs после установки расширения и повторите попытку."
       : error.message;
     render();
   }
@@ -108,7 +108,7 @@ ui.stop.addEventListener("click", () => command("stop"));
 ui.copy.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(state.text.slice(state.index));
-    ui.message.textContent = "Оставшийся текст скопирован. Поставьте курсор в Word и нажмите Ctrl+V.";
+    ui.message.textContent = "Оставшийся текст скопирован. Поставьте курсор в Google Docs и нажмите Ctrl+V.";
     ui.message.classList.remove("error");
   } catch (_) {
     ui.message.textContent = "Не удалось открыть буфер обмена. Выделите оставшийся текст вручную.";
