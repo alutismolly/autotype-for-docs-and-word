@@ -31,6 +31,19 @@
     ))
   );
 
+  function isLikelyDocumentTitle(el) {
+    if (!el) return false;
+    const description = [
+      el.id,
+      typeof el.className === "string" ? el.className : "",
+      el.getAttribute?.("aria-label"),
+      el.getAttribute?.("title"),
+      el.getAttribute?.("placeholder"),
+      el.getAttribute?.("data-automationid")
+    ].filter(Boolean).join(" ").toLowerCase();
+    return /document.?title|file.?name|filename|rename|имя файла|название/.test(description);
+  }
+
   function findGoogleDocsEditor() {
     const iframe = document.querySelector?.(".docs-texteventtarget-iframe");
     try {
@@ -47,14 +60,15 @@
     if (googleDocsEditor) return googleDocsEditor;
 
     const active = document.activeElement;
-    if (isEditable(active)) return active;
+    if (isEditable(active) && !isLikelyDocumentTitle(active)) return active;
     const selection = document.getSelection();
     const anchor = selection?.anchorNode;
     const candidate = anchor && (anchor.nodeType === Node.ELEMENT_NODE ? anchor : anchor.parentElement);
     const editable = candidate?.closest?.('[contenteditable="true"], textarea, input, [role="textbox"]');
     if (isEditable(editable)) return editable;
 
-    const fallback = document.querySelector(
+    const isMicrosoftTopFrame = window === window.top && /(?:office|microsoft|sharepoint|onedrive)/i.test(location.hostname);
+    const fallback = isMicrosoftTopFrame ? null : document.querySelector(
       'textarea.docs-texteventtarget, textarea[aria-label*="document" i], [contenteditable="true"], [role="textbox"]'
     );
     if (isEditable(fallback)) return fallback;

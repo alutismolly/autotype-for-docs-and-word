@@ -56,9 +56,18 @@ async function command(command) {
   try {
     const tab = await activeSupportedTab();
     const frames = await chrome.webNavigation.getAllFrames({ tabId: tab.id });
+    const isGoogleDocs = /^https:\/\/docs\.google\.com\/document\//i.test(tab.url || "");
+    if (!isGoogleDocs) {
+      const frameScore = (frame) => {
+        if (/officeapps\.live\.com|word-edit|wordeditor/i.test(frame.url || "")) return 0;
+        if (frame.frameId !== 0) return 1;
+        return 2;
+      };
+      frames.sort((a, b) => frameScore(a) - frameScore(b));
+    }
     if (controlFrameId !== null) {
       const preferred = frames.find((frame) => frame.frameId === controlFrameId);
-      if (preferred) {
+      if (preferred && (isGoogleDocs || preferred.frameId !== 0)) {
         frames.splice(frames.indexOf(preferred), 1);
         frames.unshift(preferred);
       }
