@@ -1,6 +1,6 @@
 (() => {
-  if (window.__autoTypeForGoogleDocsLoaded) return;
-  window.__autoTypeForGoogleDocsLoaded = true;
+  if (window.__autoTypeForDocsLoaded) return;
+  window.__autoTypeForDocsLoaded = true;
 
   let job = { text: "", speed: 120, index: 0, status: "idle", error: "" };
   let timer = null;
@@ -157,7 +157,7 @@
       return;
     }
     if (!insertCharacter(job.text[job.index])) {
-      await fail("Google Docs заблокировал программный ввод. Скопируйте оставшийся текст и вставьте его вручную через Ctrl+V.");
+      await fail("Редактор заблокировал программный ввод. Скопируйте оставшийся текст и вставьте его вручную через Ctrl+V.");
       return;
     }
     job.index += 1;
@@ -172,14 +172,14 @@
       const command = message.command;
       if (command === "start") {
         target = findEditor();
-        if (!target) return sendResponse({ ok: false, error: "Сначала щёлкните в области документа Google Docs, затем снова нажмите «Старт»." });
+        if (!target) return sendResponse({ ok: false, error: "Сначала щёлкните в области документа, затем снова нажмите «Старт»." });
         job = { text: message.text, speed: message.speed, index: 0, status: "running", error: "" };
         await publish(); schedule();
       } else if (command === "pause") {
         clearTimeout(timer); job.status = "paused"; await publish();
       } else if (command === "resume") {
         target = findEditor() || target;
-        if (!target?.isConnected) return sendResponse({ ok: false, error: "Поставьте курсор в документ Google Docs перед продолжением." });
+        if (!target?.isConnected) return sendResponse({ ok: false, error: "Поставьте курсор в документ перед продолжением." });
         job.text = message.text; job.speed = message.speed; job.index = Math.min(message.index ?? job.index, job.text.length); job.status = "running"; job.error = "";
         await publish(); schedule();
       } else if (command === "stop") {

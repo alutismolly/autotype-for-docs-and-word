@@ -1,14 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "AutoType for Google Docs",
-  "version": "1.1.0",
-  "description": "Последовательный перенос подготовленного текста в Google Docs с паузой и контролем скорости.",
+  "name": "AutoType for Docs & Word",
+  "version": "1.2.0",
+  "description": "Последовательный перенос подготовленного текста в Google Docs и Word Online.",
   "permissions": ["storage", "unlimitedStorage", "activeTab", "tabs", "webNavigation", "clipboardWrite"],
   "host_permissions": [
-    "https://docs.google.com/*"
+    "https://docs.google.com/*",
+    "https://word.cloud.microsoft/*",
+    "https://*.office.com/*",
+    "https://*.microsoft365.com/*",
+    "https://*.officeapps.live.com/*"
   ],
   "action": {
-    "default_title": "AutoType for Google Docs",
+    "default_title": "AutoType for Docs & Word",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
@@ -29,7 +33,11 @@
   "content_scripts": [
     {
       "matches": [
-        "https://docs.google.com/*"
+        "https://docs.google.com/*",
+        "https://word.cloud.microsoft/*",
+        "https://*.office.com/*",
+        "https://*.microsoft365.com/*",
+        "https://*.officeapps.live.com/*"
       ],
       "js": ["content.js"],
       "all_frames": true,
