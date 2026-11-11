@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir -p dist
           zip -r "dist/autotype-for-docs-and-word-${GITHUB_REF_NAME}.zip" \
-            manifest.json background.js content.js popup.html popup.css popup.js icons \
+            manifest.json background.js popup.html popup.css popup.js icons \
             LICENSE PRIVACY.md
 
       - name: Publish GitHub release

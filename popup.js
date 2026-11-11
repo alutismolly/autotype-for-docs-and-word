@@ -7,7 +7,6 @@ const ui = {
 };
 let state = { text: "", speed: 120, index: 0, status: "idle", error: "" };
 let saveTimer;
-let controlFrameId = null;
 
 const labels = { idle:"Готово", running:"Ввод…", paused:"Пауза", stopped:"Остановлено", completed:"Завершено", error:"Требуется действие" };
 
@@ -55,46 +54,14 @@ async function activeSupportedTab() {
 async function command(command) {
   try {
     const tab = await activeSupportedTab();
-    const frames = await chrome.webNavigation.getAllFrames({ tabId: tab.id });
-    const isGoogleDocs = /^https:\/\/docs\.google\.com\/document\//i.test(tab.url || "");
-    if (!isGoogleDocs) {
-      const frameScore = (frame) => {
-        if (/officeapps\.live\.com|word-edit|wordeditor/i.test(frame.url || "")) return 0;
-        if (frame.frameId !== 0) return 1;
-        return 2;
-      };
-      frames.sort((a, b) => frameScore(a) - frameScore(b));
-    }
-    if (controlFrameId !== null) {
-      const preferred = frames.find((frame) => frame.frameId === controlFrameId);
-      if (preferred && (isGoogleDocs || preferred.frameId !== 0)) {
-        frames.splice(frames.indexOf(preferred), 1);
-        frames.unshift(preferred);
-      }
-    }
-    let response = null;
-    let lastError = "Редактор документа не найден на странице.";
-    for (const frame of frames) {
-      try {
-        const candidate = await chrome.tabs.sendMessage(tab.id, {
-          type: "AUTOTYPE_COMMAND", command, text: ui.text.value,
-          speed: Number(ui.speed.value), index: state.index
-        }, { frameId: frame.frameId });
-        if (candidate?.ok) {
-          response = candidate;
-          controlFrameId = frame.frameId;
-          await chrome.storage.local.set({ controlFrameId });
-          break;
-        }
-        if (candidate?.error) lastError = candidate.error;
-      } catch (_) {}
-    }
-    if (!response?.ok) throw new Error(lastError);
+    const response = await chrome.runtime.sendMessage({
+      type: "AUTOTYPE_COMMAND", command, tabId: tab.id,
+      text: ui.text.value, speed: Number(ui.speed.value), index: state.index
+    });
+    if (!response?.ok) throw new Error(response?.error || "Не удалось запустить ввод.");
     if (response.state) render(response.state);
   } catch (error) {
-    state.error = error.message.includes("Receiving end")
-      ? "Обновите вкладку документа после установки расширения и повторите попытку."
-      : error.message;
+    state.error = error.message;
     render();
   }
 }
@@ -134,9 +101,8 @@ chrome.runtime.onMessage.addListener((message) => {
 });
 
 (async () => {
-  const saved = await chrome.storage.local.get(["job", "controlFrameId"]);
+  const saved = await chrome.storage.local.get("job");
   if (saved.job) state = saved.job;
-  if (Number.isInteger(saved.controlFrameId)) controlFrameId = saved.controlFrameId;
   ui.text.value = state.text || "";
   render();
 })();

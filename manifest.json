@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
   "name": "AutoType for Docs & Word",
-  "version": "1.3.1",
+  "version": "2.0.0",
+  "minimum_chrome_version": "118",
   "description": "Последовательный перенос подготовленного текста в Google Docs и Word Online.",
-  "permissions": ["storage", "unlimitedStorage", "activeTab", "tabs", "webNavigation", "clipboardWrite"],
+  "permissions": ["storage", "unlimitedStorage", "activeTab", "tabs", "debugger", "clipboardWrite"],
   "host_permissions": [
     "https://docs.google.com/*",
     "https://word.cloud.microsoft/*",
@@ -31,23 +32,5 @@
   },
   "background": {
     "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": [
-        "https://docs.google.com/*",
-        "https://word.cloud.microsoft/*",
-        "https://*.office.com/*",
-        "https://*.microsoft365.com/*",
-        "https://*.officeapps.live.com/*",
-        "https://*.sharepoint.com/*",
-        "https://onedrive.live.com/*"
-      ],
-      "js": ["content.js"],
-      "all_frames": true,
-      "match_about_blank": true,
-      "match_origin_as_fallback": true,
-      "run_at": "document_idle"
-    }
-  ]
+  }
 }
