@@ -44,7 +44,8 @@ async function activeSupportedTab() {
   const url = tab?.url || "";
   const isGoogleDocs = /^https:\/\/docs\.google\.com\/document\//i.test(url);
   const isWordOnline = /^https:\/\/word\.cloud\.microsoft\//i.test(url) ||
-    /^https:\/\/([^/]+\.)?(office\.com|microsoft365\.com|officeapps\.live\.com)\//i.test(url);
+    /^https:\/\/([^/]+\.)?(office\.com|microsoft365\.com|officeapps\.live\.com|sharepoint\.com)\//i.test(url) ||
+    /^https:\/\/onedrive\.live\.com\//i.test(url);
   if (!tab?.id || (!isGoogleDocs && !isWordOnline)) {
     throw new Error("Откройте Google Docs или Word Online и повторите попытку.");
   }

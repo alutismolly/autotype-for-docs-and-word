@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AutoType for Docs & Word",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Последовательный перенос подготовленного текста в Google Docs и Word Online.",
   "permissions": ["storage", "unlimitedStorage", "activeTab", "tabs", "webNavigation", "clipboardWrite"],
   "host_permissions": [
@@ -9,7 +9,9 @@
     "https://word.cloud.microsoft/*",
     "https://*.office.com/*",
     "https://*.microsoft365.com/*",
-    "https://*.officeapps.live.com/*"
+    "https://*.officeapps.live.com/*",
+    "https://*.sharepoint.com/*",
+    "https://onedrive.live.com/*"
   ],
   "action": {
     "default_title": "AutoType for Docs & Word",
@@ -37,7 +39,9 @@
         "https://word.cloud.microsoft/*",
         "https://*.office.com/*",
         "https://*.microsoft365.com/*",
-        "https://*.officeapps.live.com/*"
+        "https://*.officeapps.live.com/*",
+        "https://*.sharepoint.com/*",
+        "https://onedrive.live.com/*"
       ],
       "js": ["content.js"],
       "all_frames": true,
